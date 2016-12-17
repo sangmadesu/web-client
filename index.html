@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+    <style type="text/css">
+        .log {
+            margin: 10px 10px;
+            padding: 10px 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <log v-for="log in logs" :log="log"></log>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.1.6/vue.min.js"></script>
+    <template id="log-tpl">
+        <div class="log">
+            <p>ID: {{ log.id_hardware }}</p>
+            <p>Nama Pos: {{ log.nama_pos }}</p>
+            <p>Lat: {{ log.latitude }}</p>
+            <p>Long: {{ log.longitude }}</p>
+        </div>
+    </template>
+    <script>
+        var Log = Vue.extend({
+            template: '#log-tpl',
+            props: ['log'],
+        })
+        var vm = new Vue({
+            el: '#app',
+            data: {
+                logs: []
+            },
+            methods: {
+                fetchLogs: function () {
+                    $.get('http://localhost:8000/api/log')
+                        .then(function (data) {
+                            this.logs = data;
+                        }.bind(this));
+                }
+            },
+            mounted: function () {
+                this.fetchLogs();
+            },
+            components: {
+                log: Log,
+            }
+        })
+    </script>
+</body>
+</html>
