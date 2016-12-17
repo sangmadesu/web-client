@@ -4,18 +4,36 @@
     <meta charset="UTF-8">
     <title>Document</title>
     <style type="text/css">
+        .half {
+            width: 50%;
+            float: left;
+        }
+
+        .log-wrapper {
+            padding: 30px 20px;
+        }
+
         .log {
-            margin: 10px 10px;
+            font-size: 14px;
+            margin: 10px 0;
             padding: 10px 15px;
             border: 1px solid #ccc;
             border-radius: 4px;
-            display: inline-block;
         }
     </style>
 </head>
 <body>
     <div id="app">
-        <log v-for="log in logs" :log="log"></log>
+        <div class="half">
+            <div class="log-wrapper">
+                <h2>Log</h2>
+                <log v-for="log in logs" :log="log"></log>
+            </div>
+        </div>
+        <div class="half">
+            <h2>Add Missing Log</h2>
+            <log-adder></log-adder>
+        </div>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.1.6/vue.min.js"></script>
@@ -25,16 +43,104 @@
             <p>Nama Pos: {{ log.nama_pos }}</p>
             <p>Lat: {{ log.latitude }}</p>
             <p>Long: {{ log.longitude }}</p>
+            <p>Signature: {{ log.signature }}</p>
+            <p>Tipe Logger: {{ log.tipe_logger }}</p>
+            <p>
+                Batas Alarm <br/><br />
+                <span>Alarm 1: {{ log.batas_alarm_1 }}</span>
+                <span>Alarm 2: {{ log.batas_alarm_2 }}</span>
+                <span>Alarm 3: {{ log.batas_alarm_3 }}</span>
+                <span>Alarm 4: {{ log.batas_alarm_4 }}</span>
+            </p>
         </div>
+    </template>
+    <template id="log-adder-tpl">
+        <form action="" @submit.prevent="addLog">
+            <div>
+                <label for="id_hardware">ID Harware</label>
+                <input type="text" v-model="log.id_hardware">
+            </div>
+            <div>
+                <label for="id_hardware">Nama pos</label>
+                <input type="text" v-model="log.nama_pos ">
+            </div>
+            <div>
+                <label for="id_hardware">Latitude</label>
+                <input type="text" v-model="log.latitude">
+            </div>
+            <div>
+                <label for="id_hardware">Longitude</label>
+                <input type="text" v-model="log.longitude">
+            </div>
+            <div>
+                <label for="id_hardware">Signature</label>
+                <input type="text" v-model="log.signature">
+            </div>
+            <div>
+                <label for="id_hardware">Batas Alarm 1</label>
+                <input type="text" v-model="log.batas_alarm_1">
+            </div>
+            <div>
+                <label for="id_hardware">Batas Alarm 2</label>
+                <input type="text" v-model="log.batas_alarm_2">
+            </div>
+            <div>
+                <label for="id_hardware">Batas Alarm 3</label>
+                <input type="text" v-model="log.batas_alarm_3">
+            </div>
+            <div>
+                <label for="id_hardware">Batas Alarm 4</label>
+                <input type="text" v-model="log.batas_alarm_4">
+            </div>
+            <div>
+                <button type="submit">Submit</button>
+            </div>
+        </form>
     </template>
     <script>
         var Log = Vue.extend({
             template: '#log-tpl',
             props: ['log'],
         })
+
+        var bus = new Vue();
+
+        var LogAdder = Vue.extend({
+            template: '#log-adder-tpl',
+            data: function () {
+                return {
+                    log: null,
+                }
+            },
+            methods: {
+                addLog: function () {
+                    bus.$emit('add-log', this.log);
+                    this.resetForm();
+                },
+                resetForm: function () {
+                    this.log =   {
+                        id_hardware: '',
+                        latitude: '',
+                        longitude: '',
+                        signature: '',
+                        nama_pos: '',
+                        tipe_logger: '',
+                        batas_alarm_1: '',
+                        batas_alarm_2: '',
+                        batas_alarm_3: '',
+                        batas_alarm_4: '',
+                    };
+                },
+            },
+            created: function () {
+                this.resetForm();
+            }
+        });
+
         var vm = new Vue({
             el: '#app',
             data: {
+                newLog: null,
                 logs: []
             },
             methods: {
@@ -43,13 +149,19 @@
                         .then(function (data) {
                             this.logs = data;
                         }.bind(this));
-                }
+                },
             },
             mounted: function () {
                 this.fetchLogs();
             },
             components: {
                 log: Log,
+                'log-adder': LogAdder,
+            },
+            created: function () {
+                bus.$on('add-log', function (log) {
+                    this.logs.push(log);
+                }.bind(this));
             }
         })
     </script>
